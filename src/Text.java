@@ -4,37 +4,35 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 public class Text {
     public static void main(String[] args) throws IOException {
-        int num = Integer.parseInt(args[0]);
+        int num =0; /*Integer.parseInt(args[0]);*/
         System.out.println("debug"+num);
 
-        String fileName1 = "D:\\Text\\text1.txt";
-        String fileName2 = "D:\\Text\\text2.txt";
+        String fileName1 = "text1.txt";
+        String fileName2 = "text2.txt";
 
         // читаем файл в строку с помощью класса Files, удаляем спец символы
-        String text1Tmp = removeSpecialSymbols(getStringFromFile(fileName1));
+        String text1 = removeSpecialSymbols(getStringFromFile(fileName1));
+        String text2 = " " + removeSpecialSymbols(getStringFromFile(fileName2)) + " .";
 
-        String text2 = " " + removeSpecialSymbols(getStringFromFile(fileName2)) + "  ";
-        int ind1 = text1Tmp.length() / 5 * num;
+        //кол-во подзадач
+        int taskCount=(int)Math.ceil(text1.length()/300f);
+
+        //вычисляем индексы начала и конца подстроки
+        int ind1 = text1.length() / taskCount * num;
         int ind2;
-        if (num == 4) {
-            ind2 = text1Tmp.length() - 1;
-        } else ind2 = text1Tmp.length() / 5 * (num + 1) + text2.length();
+        if (num == taskCount-1) {
+            ind2 = text1.length() - 1;
+        } else ind2 = text1.length() / taskCount * (num + 2);
 
+        String subText = " " + text1.substring(ind1, ind2) + " .";
 
-        String text1 = " " + text1Tmp.substring(ind1, ind2) + "  ";
+        List<String> common = getCommonSubstrings(subText, text2);
 
-        HashSet<String> common = getCommonSubstrings(text1, text2);
-        //Iterator<String> it = common.iterator();
-
-        //System.out.println("\nCommon substrings are \n" + common);
-
-        File f = new File("D:\\Text\\out" + num + ".txt");
+        File f = new File("out" + num + ".txt");
         f.createNewFile();
         FileWriter fw = new FileWriter(f);
         for (String str : common) {
@@ -64,11 +62,12 @@ public class Text {
         return wordsStartStr;
     }
 
-    public static LinkedHashSet<String> getCommonSubstrings(String str1, String str2) {
+    //метод, вычисляющий общие строки
+    public static List<String> getCommonSubstrings(String str1, String str2) {
         String s1 = "";
         String s2 = "";
 
-        LinkedHashSet<String> excerpts = new LinkedHashSet<>();
+        List<String> excerpts = new ArrayList<>();
 
         //лист индексов первых букв для str1
         List<Integer> wordsStartStr1 = getListOfIndexes(str1);
@@ -86,7 +85,9 @@ public class Text {
                     j++;
 
                     int count = 0;
-                    while (i < wordsStartStr1.size() - 1 && j < wordsStartStr2.size() - 1 && str1.substring(wordsStartStr1.get(i), wordsStartStr1.get(i + 1)).equals(str2.substring(wordsStartStr2.get(j), wordsStartStr2.get(j + 1)))) {
+
+                    while (i < wordsStartStr1.size()-1 && j < wordsStartStr2.size()-1
+                            && str1.substring(wordsStartStr1.get(i), wordsStartStr1.get(i + 1)).equals(str2.substring(wordsStartStr2.get(j), wordsStartStr2.get(j + 1)))) {
 
                         commonLine += str1.substring(wordsStartStr1.get(i), wordsStartStr1.get(i + 1));
                         count++;
@@ -105,6 +106,20 @@ public class Text {
             }
 
         }
+
+        //удаляем совпадения, которые включены в другие, более крупные
+        for (int i = 0; i < excerpts.size()-1; i++) {
+            for (int j = 0; i < excerpts.size()-1; j++) {
+                if (j == excerpts.size()) {
+                    break;
+                }
+                if (i != j && excerpts.get(i).contains(excerpts.get(j))) {
+                    excerpts.remove(j);
+                    j--;
+                }
+            }
+        }
+
         return excerpts;
     }
 

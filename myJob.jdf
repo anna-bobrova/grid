@@ -1,7 +1,8 @@
 job:
 	name: sum
 	init:
-		put text1.txt text2.txt
+		put text1.txt
+		put text2.txt
 		put Text.class Text.class
 task: remote: java grid.Sum 0
 	  final: get out0.txt out0.txt
